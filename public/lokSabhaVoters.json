@@ -1,0 +1,18 @@
+[
+  {
+    "serial": 1,
+    "constituency": "Lucknow",
+    "name": "रमेश यादव",
+    "guardian": "शिव प्रसाद यादव",
+    "gender": "पु",
+    "age": 45
+  },
+  {
+    "serial": 2,
+    "constituency": "Lucknow",
+    "name": "सीमा देवी",
+    "guardian": "रामलाल",
+    "gender": "म",
+    "age": 38
+  }
+]

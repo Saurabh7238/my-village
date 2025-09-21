@@ -1,0 +1,18 @@
+[
+  {
+    "serial": 1,
+    "constituency": "Lucknow East",
+    "name": "अजय वर्मा",
+    "guardian": "श्री राम वर्मा",
+    "gender": "पु",
+    "age": 42
+  },
+  {
+    "serial": 2,
+    "constituency": "Lucknow East",
+    "name": "कविता वर्मा",
+    "guardian": "अजय वर्मा",
+    "gender": "म",
+    "age": 39
+  }
+]
