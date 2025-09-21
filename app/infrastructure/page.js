@@ -21,7 +21,12 @@ export default function InfrastructurePage() {
       title: "Public Facilities",
       items: [
         { icon: FaHospital, label: "Primary Health Centers", value: "2" },
-        { icon: FaSchool, label: "Government Schools", value: "3" },
+        {
+          icon: FaSchool,
+          label: "Government Schools",
+          value: "3",
+          link: "/infrastructure/schools", // ✅ Link added
+        },
         { icon: FaToilet, label: "Sanitation Units Built", value: "120+" },
         { icon: FaStore, label: "Community Hall", value: "1 (Ward 5)" },
       ],
@@ -46,7 +51,7 @@ export default function InfrastructurePage() {
           icon: FaLightbulb,
           label: "Street Lights Installed",
           value: "150",
-          link: "/infrastructure/street-lights", // ✅ Link added
+          link: "/infrastructure/street-lights",
         },
         {
           icon: FaSolarPanel,
