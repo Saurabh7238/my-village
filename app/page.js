@@ -4,17 +4,20 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import ServiceCard from "../components/ServiceCard";
 import { Globe, Moon, Sun, Bell } from "lucide-react";
+import { useRouter } from "next/navigation"; // for client-side navigation
 
 export default function HomePage() {
+  const router = useRouter();
+
   const [language, setLanguage] = useState("hi");
   const [darkMode, setDarkMode] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [visitCount, setVisitCount] = useState(null);
   const [showBanner, setShowBanner] = useState(true);
   const [notifications, setNotifications] = useState([
-    "Special Gram Sabha on Sep 25",
-    "New development project approved",
-    "Budget updated for this month",
+    { id: 1, text: "Special Gram Sabha on Sep 25", href: "/notifications/special-gram-sabha" },
+    { id: 2, text: "New development project approved", href: "/notifications/development-projects" },
+    { id: 3, text: "Budget updated for this month", href: "/notifications/budget-update" },
   ]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef();
@@ -30,7 +33,6 @@ export default function HomePage() {
       .then((data) => setVisitCount(data.count));
   }, []);
 
-  // Persist dark mode
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -39,7 +41,6 @@ export default function HomePage() {
     }
   }, [darkMode]);
 
-  // Close notification dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -123,7 +124,7 @@ export default function HomePage() {
 
         {/* NOTIFICATION BANNER */}
         {showBanner && (
-          <div className="bg-yellow-100 dark:bg-yellow-700 text-black dark:text-red text-sm px-4 py-2 flex justify-between items-center fixed top-0 left-0 right-0 z-50 shadow-md">
+          <div className="bg-yellow-100 dark:bg-yellow-700 text-black dark:text-white text-sm px-4 py-2 flex justify-between items-center fixed top-0 left-0 right-0 z-50 shadow-md">
             <span>{t.bannerMessage}</span>
             <button
               onClick={() => setShowBanner(false)}
@@ -134,65 +135,86 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* ICON BUTTONS TOP-RIGHT */}
-        <div className={`fixed z-[60] right-2 flex gap-2 transition-all duration-300`} style={{ top: showBanner ? 40 : 8 }}>
-          {/* Notification Icon */}
-          <div className="relative" ref={dropdownRef}>
+        {/* TOP-RIGHT ICON BUTTONS */}
+        {!showBanner && (
+          <div className="fixed z-[60] right-2 top-2 flex gap-2 transition-all duration-300">
+            {/* Notification Dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={toggleDropdown}
+                className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow"
+                title={t.notificationsTitle}
+              >
+                <Bell className="w-5 h-5 text-gray-700 dark:text-gray-200" />
+              </button>
+              {notifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
+                  {notifications.length}
+                </span>
+              )}
+              {showDropdown && (
+                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 shadow-lg rounded-md overflow-hidden border border-gray-200 dark:border-gray-700 z-50">
+                  <div className="p-2 text-sm font-bold border-b border-gray-200 dark:border-gray-700">{t.notificationsTitle}</div>
+                  <ul>
+                    {notifications.map((note) => (
+                      <li
+                        key={note.id}
+                        className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer"
+                        onClick={() => router.push(note.href)}
+                      >
+                        {note.text}
+                      </li>
+                    ))}
+                    {notifications.length === 0 && (
+                      <div className="px-3 py-2 text-gray-500 text-sm">{t.noNotifications}</div>
+                    )}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Language */}
             <button
-              onClick={toggleDropdown}
+              onClick={toggleLanguage}
               className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow"
-              title={t.notificationsTitle}
+              title={t.lang}
             >
-              <Bell className="w-5 h-5 text-gray-700 dark:text-gray-200" />
+              <Globe className="w-5 h-5 text-gray-700 dark:text-gray-200" />
             </button>
-            {notifications.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
-                {notifications.length}
-              </span>
-            )}
-            {showDropdown && (
-              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 shadow-lg rounded-md overflow-hidden border border-gray-200 dark:border-gray-700 z-50">
-                <div className="p-2 text-sm font-bold border-b border-gray-200 dark:border-gray-700">{t.notificationsTitle}</div>
-                <ul>
-                  {notifications.map((note, idx) => (
-                    <li key={idx} className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer">{note}</li>
-                  ))}
-                  {notifications.length === 0 && <div className="px-3 py-2 text-gray-500 text-sm">{t.noNotifications}</div>}
-                </ul>
-              </div>
-            )}
+
+            {/* Dark Mode */}
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow"
+              title={t.dark}
+            >
+              {darkMode ? (
+                <Sun className="w-5 h-5 text-gray-700 dark:text-gray-200" />
+              ) : (
+                <Moon className="w-5 h-5 text-gray-700 dark:text-gray-200" />
+              )}
+            </button>
           </div>
-
-          {/* Language Icon */}
-          <button
-            onClick={toggleLanguage}
-            className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow"
-            title={t.lang}
-          >
-            <Globe className="w-5 h-5 text-gray-700 dark:text-gray-200" />
-          </button>
-
-          {/* Dark Mode Icon */}
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow"
-            title={t.dark}
-          >
-            {darkMode ? <Sun className="w-5 h-5 text-gray-700 dark:text-gray-200" /> : <Moon className="w-5 h-5 text-gray-700 dark:text-gray-200" />}
-          </button>
-        </div>
+        )}
 
         {/* MAIN CONTENT */}
-        <div className={`${showBanner ? "pt-20" : "pt-10"} pb-16`}>
+        <div className="pb-16 transition-all duration-500 pt-20">
+
           {/* HERO */}
           <section className="text-center py-2 bg-gradient-to-r from-green-100 via-blue-100 to-yellow-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600">
             <h1 className="text-xl font-bold text-green-700 dark:text-yellow-400">{t.welcome}</h1>
             <p className="text-sm text-gray-700 dark:text-gray-300">{t.description}</p>
           </section>
 
-          {/* SLOGAN STRIP */}
-          <section className="bg-black text-white py-2 text-center shadow-sm">
-            <p className="text-sm font-medium tracking-wide">{t.slogan}</p>
+          {/* SCROLLING SLOGAN */}
+          <section className="overflow-hidden relative bg-black text-white py-2">
+            <motion.div
+              className="whitespace-nowrap"
+              animate={{ x: ["100%", "-100%"] }}
+              transition={{ repeat: Infinity, ease: "linear", duration: 20 }}
+            >
+              <p className="inline-block text-sm font-medium tracking-wide px-4">{t.slogan}</p>
+            </motion.div>
           </section>
 
           {/* MOVING IMAGES */}
@@ -204,7 +226,12 @@ export default function HomePage() {
                 transition={{ ease: "linear", duration: 20, repeat: Infinity }}
               >
                 {[...images, ...images].map((src, idx) => (
-                  <img key={idx} src={src} alt={`Slide ${idx}`} className="rounded-md shadow-sm hover:scale-105 transition h-24" />
+                  <img
+                    key={idx}
+                    src={src}
+                    alt={`Slide ${idx}`}
+                    className="rounded-md shadow-sm hover:scale-105 transition h-24"
+                  />
                 ))}
               </motion.div>
             </div>
@@ -246,14 +273,30 @@ export default function HomePage() {
               <h3 className="text-lg font-bold mb-2">{t.contactTitle}</h3>
               <p className="text-sm mb-4">{t.contactMessage}</p>
               <div className="flex justify-end gap-2">
-                <a href={t.whatsappLink} target="_blank" rel="noopener noreferrer" className="px-3 py-1 text-sm rounded bg-green-600 text-white hover:bg-green-700 transition">{t.whatsapp}</a>
-                <a href="tel:+919336401640" className="px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition">{t.call}</a>
-                <button onClick={toggleModal} className="px-3 py-1 text-sm rounded bg-gray-300 dark:bg-gray-700 text-black dark:text-white hover:bg-gray-400 dark:hover:bg-gray-600 transition">{t.close}</button>
+                <a
+                  href={t.whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1 text-sm rounded bg-green-600 text-white hover:bg-green-700 transition"
+                >
+                  {t.whatsapp}
+                </a>
+                <a
+                  href="tel:+919876543210"
+                  className="px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition"
+                >
+                  {t.call}
+                </a>
+                <button
+                  onClick={toggleModal}
+                  className="px-3 py-1 text-sm rounded bg-gray-300 dark:bg-gray-700 text-black dark:text-white hover:bg-gray-400 dark:hover:bg-gray-600 transition"
+                >
+                  {t.close}
+                </button>
               </div>
             </div>
           </div>
         )}
-
       </div>
     </div>
   );
