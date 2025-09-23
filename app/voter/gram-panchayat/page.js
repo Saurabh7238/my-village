@@ -6,7 +6,7 @@ export default function GramPanchayatPage() {
   const [voters, setVoters] = useState([]);
   const [search, setSearch] = useState("");
   const [wardFilter, setWardFilter] = useState("");
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState("hi");
 
   useEffect(() => {
     fetch("/voterlist.json")
@@ -15,12 +15,12 @@ export default function GramPanchayatPage() {
       .catch((err) => console.error("Failed to load voter list:", err));
   }, []);
 
-  const uniqueWards = [...new Set(voters.map((v) => v.ward).filter(Boolean))];
+  const uniqueWards = [...new Set(voters.map((v) => v.house_number).filter(Boolean))];
 
   const filteredVoters = voters.filter((voter) => {
-    const name = voter?.name?.toLowerCase?.() || "";
+    const name = voter?.elector_name?.toLowerCase?.() || "";
     const matchesSearch = name.includes(search.toLowerCase());
-    const matchesWard = wardFilter ? voter.ward === wardFilter : true;
+    const matchesWard = wardFilter ? voter.house_number === parseInt(wardFilter) : true;
     return matchesSearch && matchesWard;
   });
 
@@ -70,6 +70,13 @@ export default function GramPanchayatPage() {
 
   const t = labels[language];
 
+  const normalizeGender = (g) => {
+    if (language === "hi") return g;
+    if (g === "पु") return "Male";
+    if (g === "म") return "Female";
+    return g;
+  };
+
   return (
     <div className="pt-20 px-4 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -112,12 +119,25 @@ export default function GramPanchayatPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {filteredVoters.map((voter, index) => (
-          <div key={index} className="bg-white border border-gray-200 rounded-lg p-4 shadow hover:shadow-md transition">
-            <h2 className="text-lg font-semibold text-green-700">{voter.name || "Unnamed Voter"}</h2>
-            <p className="text-sm text-gray-600">{t.ward}: {voter.ward || "Unknown"}</p>
-            <p className="text-sm text-gray-600">{t.guardian}: {voter.guardian || "N/A"}</p>
-            <p className="text-sm text-gray-600">{t.gender}: {voter.gender || "N/A"}</p>
-            <p className="text-sm text-gray-600">{t.age}: {voter.age || "N/A"}</p>
+          <div
+            key={index}
+            className="bg-white border border-gray-200 rounded-lg p-4 shadow hover:shadow-md transition"
+          >
+            <h2 className="text-lg font-semibold text-green-700">
+              {voter.elector_name || "नाम नहीं मिला"}
+            </h2>
+            <p className="text-sm text-gray-600">
+              {t.ward}: {voter.house_number || "अज्ञात"}
+            </p>
+            <p className="text-sm text-gray-600">
+              {t.guardian}: {voter.parent_spouse_name || "N/A"}
+            </p>
+            <p className="text-sm text-gray-600">
+              {t.gender}: {normalizeGender(voter.gender) || "N/A"}
+            </p>
+            <p className="text-sm text-gray-600">
+              {t.age}: {voter.age || "N/A"}
+            </p>
           </div>
         ))}
         {filteredVoters.length === 0 && (
