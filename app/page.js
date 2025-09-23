@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import ServiceCard from "../components/ServiceCard";
 import { Globe, Moon, Sun, Bell } from "lucide-react";
-import { useRouter } from "next/navigation"; // for client-side navigation
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const router = useRouter();
@@ -14,11 +14,7 @@ export default function HomePage() {
   const [showModal, setShowModal] = useState(false);
   const [visitCount, setVisitCount] = useState(null);
   const [showBanner, setShowBanner] = useState(true);
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: "Special Gram Sabha on Sep 25", href: "/notifications/special-gram-sabha" },
-    { id: 2, text: "New development project approved", href: "/notifications/development-projects" },
-    { id: 3, text: "Budget updated for this month", href: "/notifications/budget-update" },
-  ]);
+  const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef();
 
@@ -27,20 +23,34 @@ export default function HomePage() {
   const toggleModal = () => setShowModal(!showModal);
   const toggleDropdown = () => setShowDropdown(!showDropdown);
 
+  // visitor count API
   useEffect(() => {
     fetch("/api/visit")
       .then((res) => res.json())
-      .then((data) => setVisitCount(data.count));
+      .then((data) => setVisitCount(data.count))
+      .catch(() => setVisitCount(0));
   }, []);
 
+  // notifications API – safe
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    fetch("/api/notifications")
+      .then((res) => {
+        if (!res.ok) throw new Error("Bad response");
+        return res.json();
+      })
+      .then((data) => setNotifications(data))
+      .catch((err) => {
+        console.error(err);
+        setNotifications([]);
+      });
+  }, []);
+
+  // dark mode toggle
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);
 
+  // close dropdown if clicked outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -61,7 +71,8 @@ export default function HomePage() {
       slogan: "Panchayat Vikas, Sarvajan Sukhaya 🌞 | Efficient Governance for Every Citizen",
       footer: "© 2025 Gram Panchayat | Powered by Local Governance",
       fab: "📞",
-      whatsappLink: "https://wa.me/qr/D5EKI63JQJHLC1?text=Hello%20Gram%20Panchayat%20Team%2C%20I%20have%20a%20query.",
+      whatsappLink:
+        "https://wa.me/qr/D5EKI63JQJHLC1?text=Hello%20Gram%20Panchayat%20Team%2C%20I%20have%20a%20query.",
       contactTitle: "Contact Gram Panchayat",
       contactMessage: "Send us a message or reach out via WhatsApp.",
       close: "Close",
@@ -81,7 +92,8 @@ export default function HomePage() {
       slogan: "पंचायत विकास, सर्वजन सुखाय 🌞 | Efficient Governance for Every Citizen",
       footer: "© 2025 ग्राम पंचायत | स्थानीय शासन द्वारा संचालित",
       fab: "📞",
-      whatsappLink: "https://wa.me/qr/D5EKI63JQJHLC1?text=नमस्ते%20ग्राम%20पंचायत%20टीम%2C%20मुझे%20एक%20सवाल%20है।",
+      whatsappLink:
+        "https://wa.me/qr/D5EKI63JQJHLC1?text=नमस्ते%20ग्राम%20पंचायत%20टीम%2C%20मुझे%20एक%20सवाल%20है।",
       contactTitle: "संपर्क करें",
       contactMessage: "हमें संदेश भेजें या WhatsApp से जुड़ें।",
       close: "बंद करें",
@@ -110,19 +122,16 @@ export default function HomePage() {
     { title: "Rivers, Roads & Lights", href: "/infrastructure" },
   ];
 
-  const images = [
-    "/slide.png",
-    "/voter.png",
-    "/panchayat.jpg",
-    "/panchayat.jpg",
-    "/panchayat.jpg",
-  ];
+  const images = ["/slide.png", "/voter.png", "/panchayat.jpg"];
 
   return (
     <div className={`${darkMode ? "dark" : ""}`}>
-      <div className={`min-h-screen ${darkMode ? "bg-gray-900 text-white" : "bg-white text-black"} relative`}>
-
-        {/* NOTIFICATION BANNER */}
+      <div
+        className={`min-h-screen ${
+          darkMode ? "bg-gray-900 text-white" : "bg-white text-black"
+        } relative`}
+      >
+        {/* Notification Banner */}
         {showBanner && (
           <div className="bg-yellow-100 dark:bg-yellow-700 text-black dark:text-white text-sm px-4 py-2 flex justify-between items-center fixed top-0 left-0 right-0 z-50 shadow-md">
             <span>{t.bannerMessage}</span>
@@ -135,10 +144,9 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* TOP-RIGHT ICON BUTTONS */}
+        {/* Top-right icons */}
         {!showBanner && (
           <div className="fixed z-[60] right-2 top-2 flex gap-2 transition-all duration-300">
-            {/* Notification Dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={toggleDropdown}
@@ -154,26 +162,32 @@ export default function HomePage() {
               )}
               {showDropdown && (
                 <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 shadow-lg rounded-md overflow-hidden border border-gray-200 dark:border-gray-700 z-50">
-                  <div className="p-2 text-sm font-bold border-b border-gray-200 dark:border-gray-700">{t.notificationsTitle}</div>
+                  <div className="p-2 text-sm font-bold border-b border-gray-200 dark:border-gray-700">
+                    {t.notificationsTitle}
+                  </div>
                   <ul>
-                    {notifications.map((note) => (
-                      <li
-                        key={note.id}
-                        className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer"
-                        onClick={() => router.push(note.href)}
-                      >
-                        {note.text}
-                      </li>
-                    ))}
-                    {notifications.length === 0 && (
-                      <div className="px-3 py-2 text-gray-500 text-sm">{t.noNotifications}</div>
+                    {notifications.length > 0 ? (
+                      notifications.map((note) => (
+                        <li
+                          key={note.id}
+                          className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer"
+                          onClick={() =>
+                            router.push(note.link || "/notifications")
+                          }
+                        >
+                          {note.title}
+                        </li>
+                      ))
+                    ) : (
+                      <div className="px-3 py-2 text-gray-500 text-sm">
+                        {t.noNotifications}
+                      </div>
                     )}
                   </ul>
                 </div>
               )}
             </div>
 
-            {/* Language */}
             <button
               onClick={toggleLanguage}
               className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow"
@@ -182,7 +196,6 @@ export default function HomePage() {
               <Globe className="w-5 h-5 text-gray-700 dark:text-gray-200" />
             </button>
 
-            {/* Dark Mode */}
             <button
               onClick={toggleDarkMode}
               className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow"
@@ -197,27 +210,29 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* MAIN CONTENT */}
+        {/* Main Content */}
         <div className="pb-16 transition-all duration-500 pt-20">
-
-          {/* HERO */}
           <section className="text-center py-2 bg-gradient-to-r from-green-100 via-blue-100 to-yellow-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600">
-            <h1 className="text-xl font-bold text-green-700 dark:text-yellow-400">{t.welcome}</h1>
-            <p className="text-sm text-gray-700 dark:text-gray-300">{t.description}</p>
+            <h1 className="text-xl font-bold text-green-700 dark:text-yellow-400">
+              {t.welcome}
+            </h1>
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              {t.description}
+            </p>
           </section>
 
-          {/* SCROLLING SLOGAN */}
           <section className="overflow-hidden relative bg-black text-white py-2">
             <motion.div
               className="whitespace-nowrap"
               animate={{ x: ["100%", "-100%"] }}
               transition={{ repeat: Infinity, ease: "linear", duration: 20 }}
             >
-              <p className="inline-block text-sm font-medium tracking-wide px-4">{t.slogan}</p>
+              <p className="inline-block text-sm font-medium tracking-wide px-4">
+                {t.slogan}
+              </p>
             </motion.div>
           </section>
 
-          {/* MOVING IMAGES */}
           <section className="py-2 overflow-hidden bg-white dark:bg-gray-800">
             <div className="relative w-full">
               <motion.div
@@ -237,28 +252,34 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* SERVICES GRID */}
           <section className="max-w-6xl mx-auto px-2 py-4">
-            <h2 className="text-lg font-bold text-center mb-3 text-green-700 dark:text-yellow-400">{t.services}</h2>
+            <h2 className="text-lg font-bold text-center mb-3 text-green-700 dark:text-yellow-400">
+              {t.services}
+            </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {services.map((s, i) => (
-                <ServiceCard key={s.href} title={s.title} href={s.href} index={i} />
+                <ServiceCard
+                  key={s.href}
+                  title={s.title}
+                  href={s.href}
+                  index={i}
+                />
               ))}
             </div>
           </section>
         </div>
 
-        {/* VISITOR COUNTER */}
         <section className="text-center py-2 bg-gray-100 dark:bg-gray-800 border-t border-gray-300 dark:border-gray-700">
-          <p className="text-sm text-gray-700 dark:text-gray-300">🔢 {t.visitors}: <span className="font-bold">{visitCount ?? "..."}</span></p>
+          <p className="text-sm text-gray-700 dark:text-gray-300">
+            🔢 {t.visitors}: <span className="font-bold">{visitCount ?? "..."}</span>
+          </p>
         </section>
 
-        {/* FOOTER */}
         <footer className="fixed bottom-0 left-0 right-0 bg-gray-100 dark:bg-gray-800 text-center text-xs py-2 border-t border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300">
-          {t.footer} <span className="text-[10px] ml-2">Powered by Saurabh Dev</span>
+          {t.footer}{" "}
+          <span className="text-[10px] ml-2">Powered by Saurabh Dev</span>
         </footer>
 
-        {/* FLOATING ACTION BUTTON */}
         <button
           onClick={toggleModal}
           className="fixed bottom-16 right-4 bg-green-500 hover:bg-green-600 text-white text-lg px-4 py-2 rounded-full shadow-lg transition animate-pulse"
@@ -266,7 +287,6 @@ export default function HomePage() {
           {t.fab}
         </button>
 
-        {/* MODAL CONTACT FORM */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-900 text-black dark:text-white rounded-lg p-6 w-80 shadow-xl">
