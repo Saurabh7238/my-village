@@ -277,7 +277,7 @@ export default function HomePage() {
 
         <footer className="fixed bottom-0 left-0 right-0 bg-gray-100 dark:bg-gray-800 text-center text-xs py-2 border-t border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300">
           {t.footer}{" "}
-          <span className="text-[10px] ml-2">Powered by Saurabh Dev</span>
+          <span className="text-[10px] ml-2">Powered by Saurabh</span>
         </footer>
 
         <button
@@ -302,7 +302,7 @@ export default function HomePage() {
                   {t.whatsapp}
                 </a>
                 <a
-                  href="tel:+919876543210"
+                  href="tel:+919336401640"
                   className="px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition"
                 >
                   {t.call}
