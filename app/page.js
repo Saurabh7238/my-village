@@ -89,7 +89,7 @@ export default function HomePage() {
       services: "सेवाएं",
       lang: "English",
       dark: "डार्क मोड",
-      slogan: "पंचायत विकास, सर्वजन सुखाय 🌞 | Efficient Governance for Every Citizen",
+      slogan: "पंचायत विकास, सर्वजन सुखाय 🌞 | Efficient Governance For Every Citizen",
       footer: "© 2025 ग्राम पंचायत | स्थानीय शासन द्वारा संचालित",
       fab: "📞",
       whatsappLink:
