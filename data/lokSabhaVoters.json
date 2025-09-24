@@ -1,0 +1,13 @@
+{
+  "voters": [
+    {
+      "id": 1,
+      "voterId": "2341",
+      "voterName": "rupesh",
+      "voterGuardianName": "xyz",
+      "voterGender": "m",
+      "image": "",
+      "voterConstituency": "gram-panchayat"
+    }
+  ]
+}

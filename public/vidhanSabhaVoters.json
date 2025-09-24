@@ -1,18 +1,12 @@
-[
-  {
-    "serial": 1,
-    "constituency": "Lucknow East",
-    "name": "अजय वर्मा",
-    "guardian": "श्री राम वर्मा",
-    "gender": "पु",
-    "age": 42
-  },
-  {
-    "serial": 2,
-    "constituency": "Lucknow East",
-    "name": "कविता वर्मा",
-    "guardian": "अजय वर्मा",
-    "gender": "म",
-    "age": 39
-  }
-]
+{
+  "voters": [
+    {
+      "id": 1,
+      "elector_name": "John Doe",
+      "constituency": "Vidhan Sabha 1",
+      "guardian_name": "Richard Doe",
+      "image": "/gallery/voter1.jpg",
+      "voterId": "AB1234567"
+    }
+  ]
+}

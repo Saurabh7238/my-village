@@ -30,3 +30,56 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+@media print {
+  body {
+    background: white;
+    color: black;
+    font-family: "Arial", sans-serif;
+    margin: 20mm;
+    counter-reset: page;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .print-header {
+    margin-bottom: 20px;
+  }
+
+  .print-header img {
+    height: 60px;
+  }
+
+  .print-header h1 {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+
+  .print-header p {
+    font-size: 12px;
+    color: #555;
+  }
+
+  .print-footer {
+    position: relative;
+    margin-top: 40px;
+    padding-top: 10px;
+    border-top: 1px solid #ccc;
+  }
+
+  .print-footer::after {
+    content: "Page " counter(page);
+    position: fixed;
+    bottom: 10mm;
+    right: 20mm;
+    font-size: 12px;
+    color: #555;
+  }
+}

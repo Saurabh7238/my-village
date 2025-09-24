@@ -1,18 +1,12 @@
-[
-  {
-    "serial": 1,
-    "constituency": "Lucknow",
-    "name": "रमेश यादव",
-    "guardian": "शिव प्रसाद यादव",
-    "gender": "पु",
-    "age": 45
-  },
-  {
-    "serial": 2,
-    "constituency": "Lucknow",
-    "name": "सीमा देवी",
-    "guardian": "रामलाल",
-    "gender": "म",
-    "age": 38
-  }
-]
+{
+  "voters": [
+    {
+      "id": 1,
+      "elector_name": "John Doe",
+      "constituency": "Vidhan Sabha 1",
+      "guardian_name": "Richard Doe",
+      "image": "/gallery/voter1.jpg",
+      "voterId": "AB1234567"
+    }
+  ]
+}

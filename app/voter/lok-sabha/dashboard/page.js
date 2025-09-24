@@ -18,7 +18,8 @@ export default function LokSabhaDashboard() {
   const [voters, setVoters] = useState([]);
 
   useEffect(() => {
-    fetch("/lokSabhaVoters.json")
+    // 💡 Fetch data from the new API route for Lok Sabha voters
+    fetch("/api/lok-sabha-voters")
       .then((res) => res.json())
       .then((data) => setVoters(data));
   }, []);

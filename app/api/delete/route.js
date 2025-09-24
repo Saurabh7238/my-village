@@ -1,34 +1,31 @@
-import fs from "fs";
-import path from "path";
-import { connectDB } from "@/lib/db";
-import Image from "@/models/Image";
+import { NextResponse } from 'next/server';
+import fs from 'fs/promises';
+import path from 'path';
 
 export async function DELETE(req) {
   const { searchParams } = new URL(req.url);
-  const filename = searchParams.get("file");
+  const fileName = searchParams.get('file');
 
-  if (!filename) {
-    return new Response(JSON.stringify({ error: "No filename provided" }), {
-      status: 400,
-    });
+  if (!fileName) {
+    return NextResponse.json({ error: 'Missing file name parameter' }, { status: 400 });
   }
 
-  const filePath = path.join(process.cwd(), "public", "gallery", filename);
+  const publicFilePath = path.join(process.cwd(), 'public', 'gallery', fileName);
+  const metaFilePath = path.join(process.cwd(), 'data', 'gallery.json');
 
   try {
-    // Try deleting file only if it exists
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
+    // Delete the file from the public folder
+    await fs.unlink(publicFilePath);
 
-    await connectDB();
-    await Image.deleteOne({ filename });
+    // Update the metadata file
+    const existingData = await fs.readFile(metaFilePath, 'utf-8');
+    const metadata = JSON.parse(existingData);
+    const updatedMetadata = metadata.filter(img => img.filename !== fileName);
+    await fs.writeFile(metaFilePath, JSON.stringify(updatedMetadata, null, 2));
 
-    return new Response(JSON.stringify({ success: true }));
+    return NextResponse.json({ message: 'File deleted successfully' });
   } catch (error) {
-    console.error("DELETE ERROR:", error);
-    return new Response(JSON.stringify({ error: "Delete failed" }), {
-      status: 500,
-    });
+    console.error('Error deleting file:', error);
+    return NextResponse.json({ error: 'Failed to delete file.' }, { status: 500 });
   }
 }
