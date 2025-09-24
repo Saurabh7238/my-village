@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import { useEffect, useState } from "react";
 
 export default function AdminPanel() {
@@ -218,9 +219,9 @@ export default function AdminPanel() {
     setImageTags(img.tags?.join(", ") || "");
     setShowGalleryPicker(false);
   };
-  
+
   const handleImageSelect = (filename) => {
-    setVoterImage(`/gallery/${filename}`); 
+    setVoterImage(`/gallery/${filename}`);
     setShowImagePicker(false);
   };
 
@@ -329,9 +330,11 @@ export default function AdminPanel() {
             
             <div className="flex items-center gap-4">
               {voterImage && (
-                <img
+                <Image
                   src={voterImage}
                   alt="Selected Voter"
+                  width={64}
+                  height={64}
                   className="w-16 h-16 rounded-full object-cover"
                 />
               )}
@@ -370,9 +373,11 @@ export default function AdminPanel() {
                         className="cursor-pointer border-2 border-transparent hover:border-blue-500 rounded"
                         onClick={() => handleImageSelect(img.filename)}
                       >
-                        <img
+                        <Image
                           src={`/gallery/${img.filename}`}
                           alt={img.title}
+                          width={150}
+                          height={96}
                           className="w-full h-24 object-cover rounded"
                         />
                         <p className="text-xs text-center mt-1 truncate">{img.title || img.filename}</p>
@@ -392,9 +397,11 @@ export default function AdminPanel() {
                 <li key={voter.id || `voter-${index}`} className="border rounded p-4 flex justify-between items-center">
                   <div className="flex items-center gap-4">
                     {voter.image && (
-                      <img
+                      <Image
                         src={voter.image}
                         alt={voter.name || voter.elector_name}
+                        width={64}
+                        height={64}
                         className="w-16 h-16 rounded-full object-cover"
                       />
                     )}
@@ -424,6 +431,25 @@ export default function AdminPanel() {
 
         <section>
           <h2 className="text-2xl font-bold mb-4 text-blue-700 dark:text-blue-300">Manage Gallery Images</h2>
+          
+          <button
+            onClick={async () => {
+              const res = await fetch('/api/rebuild-gallery');
+              const data = await res.json();
+              alert(data.message);
+              // Re-fetch images to update the UI
+              fetch("/api/images")
+                .then((res) => res.json())
+                .then((data) => {
+                  const imageArray = Array.isArray(data) ? data : data.images;
+                  setImages(imageArray || []);
+                });
+            }}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4"
+          >
+            Rebuild Gallery Index
+          </button>
+          
           <form onSubmit={handleUpload} className="mb-6 space-y-4">
             <div className="flex items-center space-x-4">
               <label
@@ -482,9 +508,11 @@ export default function AdminPanel() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {images.map((img, idx) => (
                 <div key={idx} className="relative group">
-                  <img
+                  <Image
                     src={`/gallery/${img.filename}`}
                     alt={img.title || `Image ${idx}`}
+                    width={250}
+                    height={192}
                     className="w-full h-48 object-cover rounded shadow-md transition-transform duration-300 ease-in-out group-hover:scale-105"
                     onContextMenu={(e) => e.preventDefault()}
                   />
