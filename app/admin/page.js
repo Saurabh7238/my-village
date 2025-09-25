@@ -2,8 +2,11 @@
 
 import Image from 'next/image';
 import { useEffect, useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 
 export default function AdminPanel() {
+  const { data: session, status } = useSession();
+
   const [notifications, setNotifications] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -19,9 +22,8 @@ export default function AdminPanel() {
   const [showGalleryPicker, setShowGalleryPicker] = useState(false);
   const [fileName, setFileName] = useState("No file chosen");
 
-  // State for Voter List management
   const [voterList, setVoterList] = useState([]);
-  const [voterType, setVoterType] = useState("vidhan-sabha"); // Default to Vidhan Sabha
+  const [voterType, setVoterType] = useState("vidhan-sabha");
   const [voterName, setVoterName] = useState("");
   const [voterGuardianName, setVoterGuardianName] = useState("");
   const [voterGender, setVoterGender] = useState("");
@@ -31,14 +33,12 @@ export default function AdminPanel() {
   const [voterImage, setVoterImage] = useState("");
   const [showImagePicker, setShowImagePicker] = useState(false);
 
-  // UseEffect to fetch notifications
   useEffect(() => {
     fetch("/api/notifications")
       .then((res) => res.json())
       .then((data) => setNotifications(data));
   }, []);
 
-  // UseEffect to fetch gallery images
   useEffect(() => {
     fetch("/api/images")
       .then((res) => res.json())
@@ -48,7 +48,6 @@ export default function AdminPanel() {
       });
   }, []);
 
-  // UseEffect to fetch voter list based on selected type
   useEffect(() => {
     let apiRoute = `/api/voter-data?type=${voterType}`;
 
@@ -225,9 +224,31 @@ export default function AdminPanel() {
     setShowImagePicker(false);
   };
 
+  if (status === "loading") {
+    return <div className="p-8 text-center">Loading...</div>;
+  }
+  
+  if (status === "unauthenticated" || session?.user?.role !== "admin") {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-8 bg-gray-50 text-red-500">
+        Access Denied. You must be an admin to view this page.
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-black dark:text-white">
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-12">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold text-green-700 dark:text-yellow-400">Admin Panel</h1>
+          <button
+            onClick={() => signOut()}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+          >
+            Sign Out
+          </button>
+        </div>
+
         <section>
           <h1 className="text-3xl font-bold mb-6 text-green-700 dark:text-yellow-400">Admin Notifications</h1>
           <form onSubmit={addNotification} className="mb-8 space-y-4">
@@ -394,7 +415,7 @@ export default function AdminPanel() {
           <ul className="space-y-4">
             {voterList.length > 0 ? (
               voterList.map((voter, index) => (
-                <li key={voter.id || `voter-${index}`} className="border rounded p-4 flex justify-between items-center">
+                <li key={`${voter.id || 'voter'}-${index}`} className="border rounded p-4 flex justify-between items-center">
                   <div className="flex items-center gap-4">
                     {voter.image && (
                       <Image
@@ -437,7 +458,6 @@ export default function AdminPanel() {
               const res = await fetch('/api/rebuild-gallery');
               const data = await res.json();
               alert(data.message);
-              // Re-fetch images to update the UI
               fetch("/api/images")
                 .then((res) => res.json())
                 .then((data) => {

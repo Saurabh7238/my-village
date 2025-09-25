@@ -2,101 +2,122 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-// Helper function to get the correct file path and directory
-const getFilePath = (type) => {
-    const dataDir = path.join(process.cwd(), 'data');
-    let fileName;
+const dataDirectory = path.join(process.cwd(), 'data');
+
+function readDataFile(fileName) {
+  try {
+    const filePath = path.join(dataDirectory, fileName);
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    return JSON.parse(fileContent);
+  } catch (error) {
+    console.error(`Error reading ${fileName}:`, error);
+    return [];
+  }
+}
+
+function writeDataFile(fileName, data) {
+  try {
+    const filePath = path.join(dataDirectory, fileName);
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+    return true;
+  } catch (error) {
+    console.error(`Error writing to ${fileName}:`, error);
+    return false;
+  }
+}
+
+export async function GET(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type') || 'vidhan-sabha';
+    let fileName = '';
+
     switch (type) {
-        case 'vidhan-sabha':
-            fileName = 'vidhanSabhaVoters.json';
-            break;
-        case 'lok-sabha':
-            fileName = 'lokSabhaVoters.json';
-            break;
-        case 'gram-panchayat':
-            fileName = 'gramPanchayatVoters.json';
-            break;
-        default:
-            throw new Error('Invalid voter type');
-    }
-    return {
-        filePath: path.join(dataDir, fileName),
-        dataDir
-    };
-};
-
-// GET request handler
-export async function GET(req) {
-    const { searchParams } = new URL(req.url);
-    const type = searchParams.get('type');
-
-    if (!type) {
-        return NextResponse.json({ error: 'Missing voter type parameter' }, { status: 400 });
+      case 'vidhan-sabha':
+        fileName = 'vidhan-sabha.json';
+        break;
+      case 'lok-sabha':
+        fileName = 'lok-sabha.json';
+        break;
+      case 'gram-panchayat':
+        fileName = 'gram-panchayat.json';
+        break;
+      default:
+        return NextResponse.json({ error: 'Invalid voter type' }, { status: 400 });
     }
 
-    try {
-        const { filePath } = getFilePath(type);
-        const fileContent = fs.readFileSync(filePath, 'utf-8');
-        const data = JSON.parse(fileContent);
-        return NextResponse.json(data);
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            return NextResponse.json({ voters: [] });
-        }
-        console.error("Failed to read voter data:", error);
-        return NextResponse.json({ error: 'Failed to read voter data' }, { status: 500 });
-    }
+    const data = readDataFile(fileName);
+    return NextResponse.json(data);
+
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
+  }
 }
 
-// POST request handler
-export async function POST(req) {
-    try {
-        const { type, ...newVoter } = await req.json();
-        const { filePath, dataDir } = getFilePath(type);
+export async function POST(request) {
+  try {
+    const body = await request.json();
+    const { type, ...newItem } = body;
+    let fileName = '';
 
-        if (!fs.existsSync(dataDir)) {
-            fs.mkdirSync(dataDir, { recursive: true });
-        }
-
-        let data = { voters: [] };
-        try {
-            const fileContent = fs.readFileSync(filePath, 'utf-8');
-            data = JSON.parse(fileContent);
-        } catch (readError) {
-            console.error(`File not found or invalid, creating new one for type: ${type}`);
-            data = { voters: [] };
-        }
-
-        const newId = (data.voters.length > 0 ? Math.max(...data.voters.map(v => v.id)) : 0) + 1;
-        const voterWithId = { id: newId, ...newVoter };
-        
-        data.voters.push(voterWithId);
-        
-        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
-        
-        return NextResponse.json(voterWithId);
-    } catch (error) {
-        console.error("Failed to add voter:", error);
-        return NextResponse.json({ error: 'Failed to add voter', details: error.message }, { status: 500 });
+    switch (type) {
+      case 'vidhan-sabha':
+        fileName = 'vidhan-sabha.json';
+        break;
+      case 'lok-sabha':
+        fileName = 'lok-sabha.json';
+        break;
+      case 'gram-panchayat':
+        fileName = 'gram-panchayat.json';
+        break;
+      default:
+        return NextResponse.json({ error: 'Invalid voter type' }, { status: 400 });
     }
+
+    const data = readDataFile(fileName);
+    const newRecord = { id: Date.now(), ...newItem };
+    data.push(newRecord);
+    
+    if (writeDataFile(fileName, data)) {
+      return NextResponse.json(newRecord);
+    } else {
+      throw new Error('Failed to write data');
+    }
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to add item' }, { status: 500 });
+  }
 }
 
-// DELETE request handler
-export async function DELETE(req) {
-    try {
-        const { id, type } = await req.json();
-        const { filePath } = getFilePath(type);
+export async function DELETE(request) {
+  try {
+    const body = await request.json();
+    const { id, type } = body;
+    let fileName = '';
 
-        const fileContent = fs.readFileSync(filePath, 'utf-8');
-        const data = JSON.parse(fileContent);
-
-        data.voters = data.voters.filter(voter => voter.id !== id);
-
-        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
-
-        return NextResponse.json({ message: 'Voter deleted successfully' });
-    } catch (error) {
-        console.error("Failed to delete voter:", error);
-        return NextResponse.json({ error: 'Failed to delete voter' }, { status: 500 });
+    switch (type) {
+      case 'vidhan-sabha':
+        fileName = 'vidhan-sabha.json';
+        break;
+      case 'lok-sabha':
+        fileName = 'lok-sabha.json';
+        break;
+      case 'gram-panchayat':
+        fileName = 'gram-panchayat.json';
+        break;
+      default:
+        return NextResponse.json({ error: 'Invalid voter type' }, { status: 400 });
     }
+
+    let data = readDataFile(fileName);
+    data = data.filter(item => item.id !== id);
+
+    if (writeDataFile(fileName, data)) {
+      return NextResponse.json({ message: 'Item deleted successfully' });
+    } else {
+      throw new Error('Failed to delete item');
+    }
+
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to delete item' }, { status: 500 });
+  }
 }
